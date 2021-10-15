@@ -26,7 +26,7 @@ pydot==1.2.3
 django-solo==1.1.2
 coreapi==2.3.1
 GitPython==2.1.8
-reportlab==3.4.0
+#reportlab==3.4.0
 xhtml2pdf==0.2.2
 networkx==2.2
 
@@ -36,5 +36,5 @@ mne==0.17.2
 -e "git+https://github.com/AllenInstitute/nwb-api.git#egg=nwb&subdirectory=ainwb"
 
 # For testing
-goodtables==2.2.1
+#goodtables==2.2.1
 Faker==0.8.17
