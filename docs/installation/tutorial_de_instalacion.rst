@@ -71,8 +71,8 @@ Configuración inicial
 
    A esto::
 
-    psycopg2
-    psycopg2-binary
+    psycopg2==2.8.6
+    psycopg2-binary==2.8.6
 
    Modifique la línea python-dateutil==2.5.2 por python-dateutil>=2.5.2, una vez editado debería quedar como sigue::
 
@@ -93,8 +93,8 @@ Configuración inicial
     django-modeltranslation==0.12.2
     django-simple-history==1.9.0
     jsonrpc-requests==0.2
-    psycopg2
-    psycopg2-binary
+    psycopg2==2.8.6
+    psycopg2-binary==2.8.6
     pyflakes==0.9.2
     pylint==1.5.4
     pep8==1.7.0
