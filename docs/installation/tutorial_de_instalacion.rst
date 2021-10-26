@@ -64,10 +64,15 @@ Configuración inicial
 
     nano requirements.txt
 
-   Comente las líneas 9 y 10, es decir las que dicen psycopg2==2.7.5 y psycopg2-binary>=2.7.7, una vez editado debería quedar de la siguiente forma::
+   Edite las líneas 9 y 10, es decir las que dicen psycopg2==2.7.5 y psycopg2-binary>=2.7.7, cambiando de esto::
 
-    #psycopg2==2.7.5
-    #psycopg2-binary>=2.7.7
+    psycopg2==2.7.5
+    psycopg2-binary>=2.7.7
+
+   A esto::
+
+    psycopg2
+    psycopg2-binary
 
    Modifique la línea python-dateutil==2.5.2 por python-dateutil>=2.5.2, una vez editado debería quedar como sigue::
 
@@ -76,6 +81,7 @@ Configuración inicial
    Por último agregue la siguiente línea al final del archivo::
 
     pyparsing<3,>=2.4.2
+    gitdb2==2.0.6
 
    Una vez terminados todos estos cambios, el archivo debería quedar de la siguiente forma::
 
@@ -87,8 +93,8 @@ Configuración inicial
     django-modeltranslation==0.12.2
     django-simple-history==1.9.0
     jsonrpc-requests==0.2
-    #psycopg2==2.7.5
-    #psycopg2-binary>=2.7.7
+    psycopg2
+    psycopg2-binary
     pyflakes==0.9.2
     pylint==1.5.4
     pep8==1.7.0
@@ -120,16 +126,13 @@ Configuración inicial
     goodtables==2.2.1
     Faker==0.8.17
     pyparsing<3,>=2.4.2
+    gitdb2==2.0.6
 
 8. Instale los paquetes de Python adicionales::
 
     cd nes/patientregistrationsystem/qdc/
 
     pip3 install -r requirements.txt
-    pip3 install psycopg2
-    pip3 install psycopg2-binary
-    pip3 uninstall gitdb2
-    pip3 install gitdb2==2.0.6
 
 .. _implementación-de-NES-con-apache-postgresql-y-mod-wsgi:
 
