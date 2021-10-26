@@ -281,7 +281,7 @@ Luego, inserte el siguiente contenido recordando que las rutas y el nombre del s
 
      STATIC_ROOT = '/usr/local/nes-system/nes/patientregistrationsystem/qdc/static'
 
-12. 12. Recopile los archivos estáticos en ``STATIC_ROOT``::
+12. Recopile los archivos estáticos en ``STATIC_ROOT``::
 
      python3 manage.py collecstatic
 
