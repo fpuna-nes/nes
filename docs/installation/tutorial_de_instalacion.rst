@@ -263,6 +263,8 @@ Luego, inserte el siguiente contenido recordando que las rutas y el nombre del s
 
 9. Cargue los datos iniciales (mire el `script-for-creating-initial-data <https://nes.readthedocs.io/en/latest/installation/scriptinitialdata.html#script-for-creating-initial-data>`_ para ver más detalles)::
 
+    cd /usr/local/nes-system/nes/patientregistrationsystem/qdc
+
     chmod +x add_initial_data.py
 
     python3 manage.py shell < add_initial_data.py
