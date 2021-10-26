@@ -25,7 +25,7 @@ Configuración inicial
 
     apt-get install python3-pip git virtualenv graphviz libpq-dev python3-dev
 
-    apt-get python3-psycopg2
+    apt-get install python3-psycopg2
 
 3. Cree el virtualenv (verifique la versión correcta de Python que está usando)::
 
