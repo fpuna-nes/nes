@@ -261,7 +261,7 @@ Luego, inserte el siguiente contenido recordando que las rutas y el nombre del s
 
            Tenga en cuenta las líneas con las directivas WSGIProcessGroup y WSGIDaemonProcess. Son importantes para configurar la configuración regional utilizada por las librerías externas, como pydot. Sin estas directivas, los caracteres especiales utilizados por, por ejemplo, pydot, no se pueden aceptar y se podría lanzar una excepción. Los consejos se obtuvieron de `aquí <http://blog.dscpl.com.au/2014/09/setting-lang-and-lcall-when-using.html>`_ y `aquí <http://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIDaemonProcess.html>`_ se explican las configuraciones de wsgi_mod. Para configurar correctamente la directiva WSGIDaemonProcess, verifique la codificación ejecutando el comando “echo $LANG” en la terminal. A veces, el servidor utiliza por ejemplo "pt_BR.UTF-8".
 
-9. Cargue los datos iniciales (mire el :ref:`script-for-creating-initial-data` para ver más detalles)::
+9. Cargue los datos iniciales (mire el `script-for-creating-initial-data <https://nes.readthedocs.io/en/latest/installation/scriptinitialdata.html#script-for-creating-initial-data>`_ para ver más detalles)::
 
     chmod +x add_initial_data.py
 
