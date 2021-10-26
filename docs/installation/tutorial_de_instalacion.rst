@@ -189,7 +189,7 @@ Edite la base de datos para utilizar el usuario / contraseña / base de datos cr
 
     cp wsgi_default.py wsgi.py
 
-    nano qdc/wsgi.py
+    nano wsgi.py
 
 El archivo debe contener::
 
