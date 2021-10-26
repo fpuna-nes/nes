@@ -1,8 +1,9 @@
-.. _tutorial-para-instalar-la-última-versión-de-nes:
+.. _tututorial-para-instalar-la-última-versión-de-nes:
 
 Tutorial para instalar la última versión de NES
 =============================================
 En esta guía, demostraremos cómo instalar y configurar NES en un entorno virtual de Python. Luego configuraremos PostgreSQL y Apache.
+
 .. _información-técnica-importante:
 
 Información técnica importante
@@ -127,6 +128,8 @@ Configuración inicial
     pip3 install -r requirements.txt
     pip3 install psycopg2
     pip3 install psycopg2-binary
+    pip3 uninstall gitdb2
+    pip3 install gitdb2==2.0.6
 
 .. _implementación-de-NES-con-apache-postgresql-y-mod-wsgi:
 
