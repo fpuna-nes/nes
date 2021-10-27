@@ -445,4 +445,14 @@ urlpatterns = [
     # Questionnaire
     url(r'^group/(?P<group_id>\d+)/questionnaire/(?P<component_configuration_id>\d+)/$', views.questionnaire_view,
         name='questionnaire_view'),
+
+    # register dicom solution
+    url(r'^(?P<experiment_id>\d+)/dicom_setting/new/$', views.dicom_setting_create, name='dicom_setting_new'),
+        url(r'^dicom_setting/(?P<dicom_setting_id>\d+)/$', views.dicom_setting_view, name='dicom_setting_view'),
+    url(r'^dicom_setting/edit/(?P<dicom_setting_id>\d+)/$', views.dicom_setting_update, name='dicom_setting_edit'),
+    url(r'^dicomsolution/list/$', views.dicomsolution_list, name='dicomsolution_list'),
+    url(r'^dicomsolution/new/$', views.dicomsolution_create, name='dicomsolution_new'),
+    url(r'^dicomsolution/(?P<dicomsolution_id>\d+)/$', views.dicomsolution_view, name='dicomsolution_view'),
+    url(r'^dicomsolution/edit/(?P<dicomsolution_id>\d+)/$', views.dicomsolution_update, name='dicomsolution_edit'),
+
 ]

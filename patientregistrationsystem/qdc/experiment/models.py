@@ -1535,3 +1535,24 @@ class PortalSelectedQuestion(models.Model):
 
     class Meta:
         unique_together = ('experiment', 'survey', 'question_code')
+
+
+class DICOMSetting(models.Model):
+    experiment = models.ForeignKey(Experiment)
+    name = models.CharField(max_length=150)
+    description = models.TextField()
+    archivo = models.FileField(upload_to=None, null=True, blank=True)
+    copied_from = models.ForeignKey('self', null=True, related_name='children')
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        super(DICOMSetting, self).save(*args, **kwargs)
+        self.experiment.save()
+
+class DICOM(Component):
+    dicom_setting = models.ForeignKey(DICOMSetting)
+
+    def save(self, *args, **kwargs):
+        super(Component, self).save(*args, **kwargs)

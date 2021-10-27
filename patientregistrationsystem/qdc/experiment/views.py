@@ -4,7 +4,9 @@ import re
 import json
 import random
 import tempfile
-
+import logging
+from orthanc_rest_client import Orthanc
+from requests.auth import HTTPBasicAuth
 import numpy as np
 
 import nwb
@@ -64,9 +66,11 @@ from .models import Experiment, ExperimentResearcher, Subject, QuestionnaireResp
     DigitalGamePhase, ContextTree, DigitalGamePhaseData, Publication, \
     GenericDataCollection, GenericDataCollectionData, GoalkeeperGameLog, ScheduleOfSending, \
     GoalkeeperGameConfig, GoalkeeperGameResults, EEGFile, EMGFile, AdditionalDataFile, GenericDataCollectionFile, \
-    DigitalGamePhaseFile, PortalSelectedQuestion, ComponentAdditionalFile, GoalkeeperPhase
+    DigitalGamePhaseFile, PortalSelectedQuestion, ComponentAdditionalFile, GoalkeeperPhase, \
+    DICOMSetting
 
-from .forms import ExperimentForm, QuestionnaireResponseForm, FileForm, GroupForm, InstructionForm, \
+# from .forms import ExperimentForm, QuestionnaireResponseForm, FileForm, GroupForm, InstructionForm, \
+from .forms import ExperimentForm, QuestionnaireResponseForm, GroupForm, InstructionForm, \
     ComponentForm, StimulusForm, BlockForm, ComponentConfigurationForm, ResearchProjectForm, NumberOfUsesToInsertForm, \
     EEGDataForm, EEGSettingForm, EquipmentForm, EEGForm, EEGAmplifierForm, \
     EEGAmplifierSettingForm, EEGSolutionForm, EEGFilterForm, EEGFilterSettingForm, \
@@ -84,7 +88,8 @@ from .forms import ExperimentForm, QuestionnaireResponseForm, FileForm, GroupFor
     EMGSurfacePlacementRegisterForm, EMGIntramuscularPlacementRegisterForm, EMGNeedlePlacementRegisterForm, \
     SubjectStepDataForm, EMGPreamplifierFilterSettingForm, CoilModelForm, TMSDataForm, TMSLocalizationSystemForm, \
     HotSpotForm, DigitalGamePhaseForm, ContextTreeForm, DigitalGamePhaseDataForm, PublicationForm, \
-    GenericDataCollectionForm, GenericDataCollectionDataForm, ResendExperimentForm, ResearchProjectOwnerForm
+    GenericDataCollectionForm, GenericDataCollectionDataForm, ResendExperimentForm, ResearchProjectOwnerForm, \
+    DICOMSettingForm
 
 from .portal import get_experiment_status_portal, \
     send_experiment_to_portal, get_portal_status, \
@@ -119,6 +124,9 @@ from survey.models import Survey, SensitiveQuestion
 from survey.views import get_questionnaire_responses, check_limesurvey_access, create_list_of_trees, \
     get_questionnaire_language, get_survey_header, questionnaire_evaluation_fields_excluded
 
+
+# This retrieves a Python logging instance (or creates it)
+logger = logging.getLogger(__name__)
 
 permission_required = partial(permission_required, raise_exception=True)
 
@@ -645,6 +653,7 @@ def experiment_view(request, experiment_id, template_name="experiment/experiment
     experiment = get_object_or_404(Experiment, pk=experiment_id)
     group_list = Group.objects.filter(experiment=experiment).order_by('title')
     eeg_setting_list = EEGSetting.objects.filter(experiment=experiment).order_by('name')
+    dicom_setting_list = DICOMSetting.objects.filter(experiment=experiment).order_by('name')
     emg_setting_list = EMGSetting.objects.filter(experiment=experiment).order_by('name')
     tms_setting_list = TMSSetting.objects.filter(experiment=experiment).order_by('name')
     context_tree_list = ContextTree.objects.filter(experiment=experiment).order_by('name')
@@ -715,6 +724,7 @@ def experiment_view(request, experiment_id, template_name="experiment/experiment
         "experiment_form": experiment_form,
         "group_list": group_list,
         "eeg_setting_list": eeg_setting_list,
+        "dicom_setting_list": dicom_setting_list,
         "emg_setting_list": emg_setting_list,
         "tms_setting_list": tms_setting_list,
         "context_tree_list": context_tree_list,
@@ -13377,5 +13387,221 @@ def setup_menu(request, template_name="experiment/setup_menu.html"):
 
     context = {"basic_register_list": basic_register_list,
                "device_register_list": device_register_list}
+
+    return render(request, template_name, context)
+
+
+@login_required
+@permission_required('experiment.add_subject')
+def dicom_setting_create(request, experiment_id, template_name="experiment/dicom_setting_register.html"):
+    experiment = get_object_or_404(Experiment, pk=experiment_id)
+
+    check_can_change(request.user, experiment.research_project)
+
+    dicom_setting_form = DICOMSettingForm(request.POST or None)
+
+    if request.method == "POST":
+        if request.POST['action'] == "save":
+            if dicom_setting_form.is_valid():
+                dicom_setting_added = dicom_setting_form.save(commit=False)
+                dicom_setting_added.experiment_id = experiment_id
+                dicom_setting_added.save()
+
+                messages.success(request, _('DICOM setting included successfully.'))
+
+                redirect_url = reverse("dicom_setting_view", args=(dicom_setting_added.id,))
+                return HttpResponseRedirect(redirect_url)
+
+    context = {"dicom_setting_form": dicom_setting_form,
+               "creating": True,
+               "editing": True,
+               "experiment": experiment}
+
+    return render(request, template_name, context)
+
+@login_required
+@permission_required('experiment.register_equipment')
+def dicomsolution_create(request, template_name="experiment/dicomsolution_register.html"):
+
+    dicomsolution_form = DICOMSolutionRegisterForm(request.POST or None)
+
+    if request.method == "POST":
+
+        if request.POST['action'] == "save":
+
+            if dicomsolution_form.is_valid():
+
+                dicomsolution_added = dicomsolution_form.save(commit=False)
+                dicomsolution_added.save()
+
+                messages.success(request, _('DICOM solution created successfully.'))
+                redirect_url = reverse("dicomsolution_view", args=(dicomsolution_added.id,))
+                return HttpResponseRedirect(redirect_url)
+
+            else:
+                messages.warning(request, _('Information not saved.'))
+
+        else:
+            messages.warning(request, _('Action not available.'))
+
+    context = {"equipment_form": dicomsolution_form,
+               "creating": True,
+               "editing": True}
+
+    return render(request, template_name, context)
+
+@login_required
+@permission_required('experiment.register_equipment')
+def dicomsolution_list(request, template_name="experiment/dicomsolution_list.html"):
+    return render(request, template_name, {"equipments": DICOMSolution.objects.all().order_by('name')})
+
+@login_required
+@permission_required('experiment.register_equipment')
+def dicomsolution_view(request, dicomsolution_id, template_name="experiment/dicomsolution_register.html"):
+    dicomsolution = get_object_or_404(DICOMSolution, pk=dicomsolution_id)
+
+    dicomsolution_form = DICOMSolutionRegisterForm(request.POST or None, instance=dicomsolution)
+
+    for field in dicomsolution_form.fields:
+        dicomsolution_form.fields[field].widget.attrs['disabled'] = True
+
+    if request.method == "POST":
+        if request.POST['action'] == "remove":
+
+            try:
+                dicomsolution.delete()
+                messages.success(request, _('DICOM solution removed successfully.'))
+                return redirect('dicomsolution_list')
+            except ProtectedError:
+                messages.error(request, _("Error trying to delete dicomsolution."))
+                redirect_url = reverse("dicomsolution_view", args=(dicomsolution_id,))
+                return HttpResponseRedirect(redirect_url)
+
+    context = {"can_change": True,
+               "equipment": dicomsolution,
+               "equipment_form": dicomsolution_form
+               }
+
+    return render(request, template_name, context)
+
+@login_required
+@permission_required('experiment.register_equipment')
+def dicomsolution_update(request, dicomsolution_id, template_name="experiment/dicomsolution_register.html"):
+    dicomsolution = get_object_or_404(DICOMSolution, pk=dicomsolution_id)
+    dicomsolution.equipment_type = 'dicom_solution'
+
+    dicomsolution_form = DICOMSolutionRegisterForm(request.POST or None, instance=dicomsolution)
+
+    if request.method == "POST":
+        if request.POST['action'] == "save":
+            if dicomsolution_form.is_valid():
+                if dicomsolution_form.has_changed():
+
+                    dicomsolution_form.save()
+                    messages.success(request, _('DICOM solution updated successfully.'))
+                else:
+                    messages.success(request, _('There is no changes to save.'))
+
+                redirect_url = reverse("eegsolution_view", args=(dicomsolution.id,))
+                return HttpResponseRedirect(redirect_url)
+
+    context = {"equipment": dicomsolution,
+               "equipment_form": dicomsolution_form,
+               "editing": True}
+
+    return render(request, template_name, context)
+
+@login_required
+@permission_required('experiment.view_researchproject')
+def dicom_setting_view(request, dicom_setting_id, template_name="experiment/dicom_setting_register.html"):
+
+    dicom_setting = get_object_or_404(DICOMSetting, pk=dicom_setting_id)
+    dicom_setting_form = DICOMSettingForm(request.POST or None, instance=dicom_setting)
+    for field in dicom_setting_form.fields:
+        dicom_setting_form.fields[field].widget.attrs['disabled'] = True
+
+    can_change = get_can_change(request.user, dicom_setting.experiment.research_project)
+
+    if request.method == "POST":
+        if can_change:
+            if request.POST['action'] == "remove":
+                # TODO: checking if there is some DICOM Data using it
+
+                # TODO: checking if there is some DICOM Step using it
+
+                experiment_id = dicom_setting.experiment_id
+
+                dicom_setting.delete()
+
+                messages.success(request, _('DICOM setting was removed successfully.'))
+
+                redirect_url = reverse("experiment_view", args=(experiment_id,))
+                return HttpResponseRedirect(redirect_url)
+
+            if request.POST['action'][:7] == "remove-":
+                # If action starts with 'remove-' it means that an equipment should be removed from the eeg_setting.
+                dicom_setting_type = request.POST['action'][7:]
+
+                setting_to_be_deleted = None
+
+                if dicom_setting_type == "dicom_amplifier":
+                    setting_to_be_deleted = get_object_or_404(DICOMAmplifierSetting, pk=dicom_setting_id)
+                elif dicom_setting_type == "dicom_solution":
+                    setting_to_be_deleted = get_object_or_404(DICOMSolutionSetting, pk=dicom_setting_id)
+                elif dicom_setting_type == "dicom_filter":
+                    setting_to_be_deleted = get_object_or_404(DICOMFilterSetting, pk=dicom_setting_id)
+                elif dicom_setting_type == "dicom_electrode_net_system":
+                    setting_to_be_deleted = get_object_or_404(DICOMElectrodeLayoutSetting, pk=dicom_setting_id)
+
+                # eeg_setting.eeg_machine_setting.delete()
+                if setting_to_be_deleted:
+                    setting_to_be_deleted.delete()
+
+                messages.success(request, _('Setting was removed successfully.'))
+
+                redirect_url = reverse("dicom_setting_view", args=(dicom_setting.id,))
+                return HttpResponseRedirect(redirect_url)
+
+    context = {"can_change": can_change,
+               "dicom_setting_form": dicom_setting_form,
+               "experiment": dicom_setting.experiment,
+               "dicom_setting": dicom_setting,
+               "editing": False}
+
+    return render(request, template_name, context)
+
+@login_required
+@permission_required('experiment.change_experiment')
+def dicom_setting_update(request, dicom_setting_id, template_name="experiment/dicom_setting_register.html"):
+    dicom_setting = get_object_or_404(DICOMSetting, pk=dicom_setting_id)
+
+    check_can_change(request.user, dicom_setting.experiment.research_project)
+
+    dicom_setting_form = DICOMSettingForm(request.POST or None, instance=dicom_setting)
+
+    if request.method == "POST":
+        if request.POST['action'] == "save":
+            
+            if dicom_setting_form.is_valid():
+                #if dicom_setting_form.has_changed():
+                dato_orthanc=dicom_setting_form.cleaned_data['archivo']
+                auth = HTTPBasicAuth('orthanc', 'orthanc')
+                orthanc = Orthanc('http://localhost:8042/instances', auth=auth)
+                logger.debug(content)
+                dicom_setting_form.save()
+                messages.success(request, _('Guardado exitosamente.'))
+                #else:
+                #    messages.success(request, _('There is no changes to save.'))
+
+                redirect_url = reverse("dicom_setting_view", args=(dicom_setting_id,))
+                return HttpResponseRedirect(redirect_url)
+            else:
+                messages.error(request, _('Ocurrio un error'))
+                logger.debug(dicom_setting_form.errors)
+
+    context = {"dicom_setting_form": dicom_setting_form,
+               "editing": True,
+               "experiment": dicom_setting.experiment,
+               "dicom_setting": dicom_setting}
 
     return render(request, template_name, context)

@@ -7,6 +7,7 @@ https://docs.djangoproject.com/en/1.6/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
+test
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -22,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 DEBUG404 = False
 
 # Put this line in local settings to put in maintenance mode, or uncomment, and
@@ -79,7 +80,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'qdc.middleware.PasswordChangeMiddleware',
     'simple_history.middleware.HistoryRequestMiddleware',
-    'maintenance_mode.middleware.MaintenanceModeMiddleware'
+    'maintenance_mode.middleware.MaintenanceModeMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 )
 
 CONTEXT_PROCESSORS = {
@@ -205,6 +207,44 @@ ADMIN_MEDIA_PREFIX = STATIC_URL + 'admin/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': '/home/nes.log',
+            'formatter': 'simple'
+        },
+    },
+    'loggers': {
+        '': {
+            'handlers': ['file','console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    }
+}
+
+if DEBUG:
+    # make all loggers use the console.
+    for logger in LOGGING['loggers']:
+        LOGGING['loggers'][logger]['handlers'] = ['console']
 
 try:
     from .settings_local import *

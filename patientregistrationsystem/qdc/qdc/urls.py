@@ -65,3 +65,11 @@ if settings.DEBUG404:
     ]
 
 handler403 = qdcviews.qdc_permission_denied_view
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/',
+            include(debug_toolbar.urls)
+        ),
+    ] + urlpatterns

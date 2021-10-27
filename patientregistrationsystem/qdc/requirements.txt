@@ -38,3 +38,6 @@ mne==0.17.2
 # For testing
 goodtables==2.2.1
 Faker==0.8.17
+
+#debugging
+django-debug-toolbar==1.11
