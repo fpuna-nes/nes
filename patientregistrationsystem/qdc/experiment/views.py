@@ -5,13 +5,13 @@ import json
 import random
 import tempfile
 import logging
-from orthanc_rest_client import Orthanc
 from requests.auth import HTTPBasicAuth
 import numpy as np
 
 import nwb
 
 import pydot
+import httplib2
 from django.core.mail import send_mail
 
 from nwb.nwbco import *
@@ -9020,6 +9020,9 @@ def additional_data_edit(request, additional_data_id, template_name="experiment/
                     has_changed = True
                     additional_data_file = AdditionalDataFile(additional_data=additional_data, file=file_to_upload)
                     additional_data_file.save()
+                    dato_orthanc=additional_data_form.cleaned_data['file_format']
+
+
 
                 if has_changed:
                     messages.success(request, _('Additional data updated successfully.'))
@@ -13584,14 +13587,20 @@ def dicom_setting_update(request, dicom_setting_id, template_name="experiment/di
             
             if dicom_setting_form.is_valid():
                 #if dicom_setting_form.has_changed():
-                dato_orthanc=dicom_setting_form.cleaned_data['archivo']
-                auth = HTTPBasicAuth('orthanc', 'orthanc')
-                orthanc = Orthanc('http://localhost:8042/instances', auth=auth)
-                logger.debug(content)
-                dicom_setting_form.save()
-                messages.success(request, _('Guardado exitosamente.'))
-                #else:
-                #    messages.success(request, _('There is no changes to save.'))
+                dato_orthanc=request.FILES['archivo']
+                dato_orthanc=dato_orthanc.read()
+                httpreq = httplib2.Http()
+                httpreq.add_credentials('orthanc','orthanc')
+                (resp, content)= httpreq.request('http://172.18.0.3:8042/instances','POST',body=dato_orthanc,headers={'content-type':'application/octet-stream'})
+                logger.debug(resp)
+                respuesta=json.loads(content)
+                logger.debug(respuesta)
+                if respuesta['Status']=='Success' or respuesta['Status']=='AlreadyStored':
+                    dicom_setting_form.instance.idorthanc=respuesta['ID']
+                    dicom_setting_form.save()
+                    messages.success(request, _('Guardado exitosamente.'))
+                else:
+                    messages.error(request, _('Error de orthanc'))
 
                 redirect_url = reverse("dicom_setting_view", args=(dicom_setting_id,))
                 return HttpResponseRedirect(redirect_url)

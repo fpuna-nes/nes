@@ -41,3 +41,6 @@ Faker==0.8.17
 
 #debugging
 django-debug-toolbar==1.11
+
+#httplib para orthanc
+httplib2
