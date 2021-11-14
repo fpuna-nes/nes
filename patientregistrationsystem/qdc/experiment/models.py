@@ -1397,6 +1397,7 @@ class EMGFile(models.Model):
 class AdditionalDataFile(models.Model):
     additional_data = models.ForeignKey(AdditionalData, related_name='additional_data_files')
     file = models.FileField(upload_to=get_data_file_dir)
+    idorthanc= models.TextField(name="idorthanc", default="")
 
 
 class DigitalGamePhaseFile(models.Model):

@@ -67,7 +67,7 @@ from .models import Experiment, ExperimentResearcher, Subject, QuestionnaireResp
     GenericDataCollection, GenericDataCollectionData, GoalkeeperGameLog, ScheduleOfSending, \
     GoalkeeperGameConfig, GoalkeeperGameResults, EEGFile, EMGFile, AdditionalDataFile, GenericDataCollectionFile, \
     DigitalGamePhaseFile, PortalSelectedQuestion, ComponentAdditionalFile, GoalkeeperPhase, \
-    DICOMSetting
+    DICOMSetting, DataFile
 
 # from .forms import ExperimentForm, QuestionnaireResponseForm, FileForm, GroupForm, InstructionForm, \
 from .forms import ExperimentForm, QuestionnaireResponseForm, GroupForm, InstructionForm, \
@@ -8912,14 +8912,37 @@ def subject_additional_data_create(request, group_id, subject_id, path_of_config
                 additional_data_added.group = group
                 additional_data_added.subject = subject
 
+                
+
                 additional_data_added.save()
 
                 # saving uploaded files
                 files_to_upload_list = request.FILES.getlist('additional_data_files')
+
                 for file_to_upload in files_to_upload_list:
                     additional_data_file = AdditionalDataFile(additional_data=additional_data_added,
                                                               file=file_to_upload)
                     additional_data_file.save()
+                
+                    idFormato = FileFormat.objects.filter(name=additional_data_form.instance.file_format)
+                    idFormatoValor = idFormato.values_list('pk', flat=True)
+                    logger.debug(idFormatoValor)
+                    for elemento in idFormatoValor:
+                        if elemento== 5: # es un dato frmi
+                            dato_orthanc=additional_data_file.file
+                            dato_orthanc=dato_orthanc.read()
+                            httpreq = httplib2.Http()
+                            httpreq.add_credentials('orthanc','orthanc')
+                            (resp, content)= httpreq.request('http://172.18.0.3:8042/instances','POST',body=dato_orthanc,headers={'content-type':'application/octet-stream'})
+                            logger.debug(resp)
+                            respuesta=json.loads(content)
+                            logger.debug(respuesta)
+                            if respuesta['Status']=='Success' or respuesta['Status']=='AlreadyStored':
+                                additional_data_file.idorthanc=respuesta['ID']
+                                additional_data_file.save()
+                                messages.success(request, _('Guardado exitosamente.'))
+                            else:
+                                messages.error(request, _('Error de orthanc'))
 
                 messages.success(request, _('Additional data collection created successfully.'))
 
