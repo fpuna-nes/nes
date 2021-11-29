@@ -1,51 +1,51 @@
 .. _tutorial-to-install-the-latest-version-of-nes:
 
-Tutorial to install the latest version of NES
+Tutorial para instalar la versión más reciente de NES
 =============================================
-In this guide, we will demonstrate how to install and configure NES in a Python virtual environment. We'll then set up PostgreSQL and Apache. 
+En esta guía, demostraremos cómo instalar y configurar NES en un entorno virtual Python. Luego configuraremos PostgreSQL y Apache. 
 
 .. _important-technical-information:
 
-Important technical information
+Información técnica importante
 -------------------------------
-* This guide walks through an installation by using packages available through Debian 9 (code name: Stretch), but can easily be adapted to other Unix operating systems.
-* Using virtualenv to install NES is recommended. This is because when you use virtualenv, you create an isolated environment with its own installation directories.
-* Latest version of NES works only with Python 3.
-* For demonstration purposes, we will use the `/usr/local` directory to deploy NES. This directory seems to be the right place according to the `Linux Foundation <https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch04s09.html>`_. 
+* Esta guía recorre una instalación utilizando paquetes disponibles a través de Debian 9 (nombre en código: Stretch), pero se puede adaptar fácilmente a otros sistemas operativos Unix.
+* Se recomienda usar virtualenv para instalar NES. Esto se debe a que cuando se utiliza virtualenv, se crea un entorno aislado con sus propios directorios de instalación.
+* La última versión de NES solo funciona con Python 3.
+* Para fines de demostración, utilizaremos el `/usr/local` para implementar NES. Este directorio parece ser el lugar correcto según el `Linux Foundation <https://refspecs.linuxfoundation.org/FHS_3.0/fhs/ch04s09.html>`_. 
 
 .. _initial-setup-nes:
 
-Initial setup
+Configuración inicial
 -------------
-1. Before running through the steps of this tutorial, make sure that all of your repositories are up to date::
+1. Antes de seguir los pasos de este tutorial, asegúrese de que todos sus repositorios estén actualizados::
 
     apt-get update
 
-2. Install some packages::
+2. Instalar algunos paquetes::
 
     apt-get install python-pip git virtualenv graphviz libpq-dev python-dev
 
     apt-get build-dep python-psycopg2
 
-3. Create the virtualenv (check the correct python version you are using)::
+3. Cree el virtualenv (verifique la versión correcta de Python que está utilizando)::
 
     cd /usr/local
 
     virtualenv nes-system -p /usr/bin/python3.5
 
-4. Run the following to activate this new virtual environment::
+4. Ejecute lo siguiente para activar este nuevo entorno virtual::
 
     source nes-system/bin/activate
 
-5. Next steps will be executed inside virtualenv::
+5. Los próximos pasos se ejecutarán dentro de virtualenv::
 
     cd nes-system
 
-6. Clone the NES. Check the latest TAG version `here <https://github.com/neuromat/nes/releases>`_::
+6. Clone la NES. Compruebe la última versión de TAG `here <https://github.com/neuromat/nes/releases>`_::
 
     git clone -b TAG-X.X https://github.com/neuromat/nes.git
 
-7. Install additional python packages::
+7. Instalar paquetes de Python adicionales::
 
     cd nes/patientregistrationsystem/qdc/
 
@@ -53,13 +53,13 @@ Initial setup
 
 .. _deploying-nes-with-apache-postgresql-and-mod-wsgi:
 
-Deploying NES with Apache, PostgreSQL and mod_wsgi
+Implementación de NES con Apache, PostgreSQL y mod_wsgi
 --------------------------------------------------
-1. Install the packages::
+1. Instalar los paquetes::
 
     apt-get install apache2 libapache2-mod-wsgi-py3 postgresql
 
-2. Create user and database (you will use this user/password/database in the next step)::
+2. Crear usuario y base de datos (utilizará este usuario/contraseña/base de datos en el siguiente paso)::
 
     su - postgres
 
@@ -69,13 +69,13 @@ Deploying NES with Apache, PostgreSQL and mod_wsgi
 
     exit
 
-3. Use this `template <https://github.com/neuromat/nes/blob/master/patientregistrationsystem/qdc/qdc/settings_local_template.py>`_ to create a file called settings_local.py and configure the database::
+3. Use esto `template <https://github.com/neuromat/nes/blob/master/patientregistrationsystem/qdc/qdc/settings_local_template.py>`_ Para crear un archivo denominado settings_local.py y configurar la base de datos::
 
     cd /usr/local/nes-system/nes/patientregistrationsystem/qdc
 
     nano qdc/settings_local.py
 
-Edit the database to use the user/password/database created in the previous step::
+Edite la base de datos para utilizar el usuario/contraseña/base de datos creada en el paso anterior::
 
     # Database
     DATABASES = {
@@ -88,21 +88,21 @@ Edit the database to use the user/password/database created in the previous step
         }
     }
 
-4. Create tables::
+4. Crear tablas::
 
     python manage.py migrate
 
-5. Create superuser::
+5. Crear super usuario::
 
     python manage.py createsuperuser
 
-6. Copy wsgi_default.py file to wsgi.py file and edit wsgi.py::
+6. Copiar wsgi_default.py file a wsgi.py file y editar wsgi.py::
 
     cp wsgi_default.py wsgi.py
 
     nano qdc/wsgi.py
 
-The file must contain::
+El archivo debe contener::
 
     # -*- coding: utf-8 -*-
 
@@ -134,11 +134,11 @@ The file must contain::
     from django.core.wsgi import get_wsgi_application
     application = get_wsgi_application()
 
-7. Create a virtual host::
+7. Crear un servidor virtual::
 
     nano /etc/apache2/sites-available/nes.conf
 
-After, insert the following content remembering that the paths and the ServerName provided should be changed according to your installation::
+Después, inserte el siguiente contenido recordando que las rutas de acceso y el NombredeServido proporcionado deben cambiarse de acuerdo con su instalación::
 
     <VirtualHost *:80>
     	ServerName nes.example.com
@@ -167,11 +167,11 @@ After, insert the following content remembering that the paths and the ServerNam
     	CustomLog ${APACHE_LOG_DIR}/nes_ssl_access.log combined
     </VirtualHost>
 
-.. Note::  note the attribute "application-group=%{GLOBAL}", which is usually not required. It is important to configure it because of the mne library, as explained `here <https://serverfault.com/questions/514242/non-responsive-apache-mod-wsgi-after-installing-scipy/697251#697251?newreg=0819baeba10e4e92a0f459d4042ea98d>`_.
+.. Nota::  note el atributo "application-group=%{GLOBAL}", que por lo general no es necesario. Es importante configurarlo debido a la biblioteca mne, como se explicó. `aquí <https://serverfault.com/questions/514242/non-responsive-apache-mod-wsgi-after-installing-scipy/697251#697251?newreg=0819baeba10e4e92a0f459d4042ea98d>`_.
 
-           note the lines with the WSGIProcessGroup and WSGIDaemonProcess directives.They are important to configure the locale used by external libraries, as pydot. Without these directives, special characteres used by, for example, pydot, can not be accepted and an exception could be thrown. The tips were get `here <http://blog.dscpl.com.au/2014/09/setting-lang-and-lcall-when-using.html>`_ and `here <http://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIDaemonProcess.html>`_ the wsgi_mod configurations are explained. To configure the WSGIDaemonProcess directive properly, check the encode running the command "echo $LANG" in the terminal. Sometimes the server uses the "pt_BR.UTF-8", e.g.
+           anote las líneas con las directivas WSGIProcessGroup y WSGIDaemonProcess. Son importantes para configurar la configuración regional utilizada por las bibliotecas externas, como pydot. Sin estas directivas, los caracteres especiales utilizados por, por ejemplo, pydot, no pueden ser aceptados y se podría lanzar una excepción. Los consejos fueron conseguir `aquí <http://blog.dscpl.com.au/2014/09/setting-lang-and-lcall-when-using.html>`_ y `aquí <http://modwsgi.readthedocs.io/en/develop/configuration-directives/WSGIDaemonProcess.html>`_ se explican las configuraciones wsgi_mod. Para configurar correctamente la directiva WSGIDaemonProcess, compruebe la codificación que ejecuta el comando "echo $LANG" en la terminal. A veces, el servidor utiliza el "pt_BR.UTF-8", e.g.
 
-8. Loading initial data (Look at :ref:`script-for-creating-initial-data` to see more details)::
+8. Carga de datos iniciales (Ver :ref:`script-for-creating-initial-data` para ver más detalles)::
 
     chmod +x add_initial_data.py
 
@@ -179,25 +179,25 @@ After, insert the following content remembering that the paths and the ServerNam
 
     python manage.py loaddata load_initial_data.json
 
-9. Managing static files::
+9. Administración de archivos estáticos::
 
     mkdir static
 
     nano qdc/settings_local.py
 
-10. Edit the ``STATIC_ROOT line``::
+10. Edite el ``STATIC_ROOT line``::
 
      STATIC_ROOT = '/usr/local/nes-system/nes/patientregistrationsystem/qdc/static'
 
-11. Collects the static files into ``STATIC_ROOT``::
+11. Recopile los archivos estáticos en ``STATIC_ROOT``::
 
      python manage.py collecstatic
 
-12. Create the media directory::
+12. Crear el directorio multimedia::
 
      mkdir media
 
-13. Change the owner of the directories ``.git`` and `patientregistrationsystem`::
+13. Cambiar el propietario de los directorios ``.git`` y `patientregistrationsystem`::
 
      cd /usr/local/nes-system/nes/
 
@@ -205,7 +205,7 @@ After, insert the following content remembering that the paths and the ServerNam
 
      chown -R www-data patientregistrationsystem 
 
-14. Enable the virtual host::
+14. Habilitar el host virtual::
 
      a2ensite nes
 
