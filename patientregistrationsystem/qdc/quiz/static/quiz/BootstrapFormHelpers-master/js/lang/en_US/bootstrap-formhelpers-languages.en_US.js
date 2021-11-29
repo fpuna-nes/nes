@@ -49,7 +49,7 @@ var BFHLanguagesList = {
   'et': 'eesti',
   'na': 'Ekakairũ Naoero',
   'en': 'English',
-  'es': 'Español',
+  'es': 'español',
   'eo': 'Esperanto',
   'eu': 'euskara',
   'ee': 'Eʋegbe',

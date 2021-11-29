@@ -1,7 +1,7 @@
-SECRET_KEY = ' ^ri1i@33v@5^84ql#wwv62zw66_wj)n=%j=z6!n*4c=1%m(y(= '
+SECRET_KEY = 'your_secret_key'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 DEBUG404 = True
 
 TEMPLATE_DEBUG = DEBUG
@@ -12,16 +12,16 @@ IS_TESTING = False
 ALLOWED_HOSTS = []
 
 # https://docs.djangoproject.com/en/1.8/ref/settings/#std:setting-STATIC_ROOT
-STATIC_ROOT = '/usr/local/nes-system/nes/patientregistrationsystem/qdc/static'
+STATIC_ROOT = ''
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'nes',
-        'USER': 'nes',
-        'PASSWORD': 'nes',
+        'NAME': 'database_name',
+        'USER': 'user',
+        'PASSWORD': 'password',
         'HOST': 'localhost',
     }
 }

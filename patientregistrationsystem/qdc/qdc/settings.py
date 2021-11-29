@@ -150,7 +150,6 @@ LANGUAGE_CODE = 'pt-br'
 LANGUAGES = (
     ('pt-br', 'Português'),
     ('en', 'English'),
-    ('es', 'Español'),
 )
 
 LOCALE_PATHS = (
